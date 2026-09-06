@@ -143,4 +143,4 @@ def product_details(request, pk):
 
     if request.method == 'DELETE':
         product.delete()
-        return Response({'message': 'Product has been successfully deleted'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Product has been successfully deleted'}, status=status.HTTP_200_OK)
