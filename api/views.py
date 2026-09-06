@@ -89,6 +89,12 @@ def place_order(request):
         except Product.DoesNotExist:
             return Response({'error': 'Product does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
+        if product_row.stock >= quantity:
+            product_row.stock -= quantity
+            product_row.save()
+        else:
+            return Response({'error': f'Only {product_row.stock} {product_row.name} remain'}, status=status.HTTP_400_BAD_REQUEST)
+
         orderitem = OrderItem.objects.create(
             order=order,
             product_id=product_id,
