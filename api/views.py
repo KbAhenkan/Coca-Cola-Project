@@ -114,6 +114,20 @@ def view_order(request):
     serializer = OrderSerializer(order, many=True)
     return Response(serializer.data)
 
+# ---------------------- MODIFY ORDER FUNCTION ---------------------------
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def modify_order(request, pk):
+    try:
+        specific_order = Order.objects.get(pk=pk)
+    except Order.DoesNotExist:
+        return Response({'error': 'This order does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = OrderSerializer(specific_order, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # ---------------------- PRODUCT FUNCTIONS ---------------------------
 @api_view(['GET', 'POST'])

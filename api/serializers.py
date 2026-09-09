@@ -26,7 +26,7 @@ class OrderSerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'user', 'date']
+        fields = ['id', 'user', 'date', 'status']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

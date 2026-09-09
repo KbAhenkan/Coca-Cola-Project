@@ -23,8 +23,14 @@ class Product(models.Model):
         return self.name
 
 class Order(models.Model):
+    STATUS = [
+        ('Pending', 'Pending'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+    ] 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS, default='Pending')
 
     def __str__(self):
         return f'Order #{self.id} by {self.user.username}'
