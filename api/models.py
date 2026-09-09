@@ -14,13 +14,23 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+class Category(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
+
 class Product(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.IntegerField(default=0)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, null=True) # Had to make this temporarily nullable because I had already created some Products in the database 
 
     def __str__(self):
         return self.name
+
+
 
 class Order(models.Model):
     STATUS = [

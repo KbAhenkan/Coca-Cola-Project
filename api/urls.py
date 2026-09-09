@@ -12,6 +12,12 @@ urlpatterns = [
     path('modify_order/<int:pk>/', views.modify_order, name='modify order'),
     path('browse/', views.browse, name='browse'),
 
+    # CATEGORY URLS
+    path('category_browse/', views.category_browse, name='browse category'),
+    path('category/', views.category_list, name='category list'),
+    path('category/<int:pk>/', views.category_details, name='category detail'),
+
+
     # PRODUCT URLS
     path('product/', views.product_list, name='product list'),
     path('product/<int:pk>/', views.product_details, name='product detail'),

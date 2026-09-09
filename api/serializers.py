@@ -1,4 +1,4 @@
-from .models import User, Product, Order, OrderItem
+from .models import User, Product, Order, OrderItem, Category
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
@@ -15,11 +15,15 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data.get('password'))
         return super().create(validated_data)
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'stock']
+        fields = ['id', 'name', 'price', 'stock', 'category']
 
 
 class OrderSerializer(serializers.ModelSerializer):

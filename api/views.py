@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import User, Product, Order, OrderItem
-from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer
+from .models import User, Product, Order, OrderItem, Category
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, CategorySerializer
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -65,6 +65,48 @@ def login(request):
             'role': user.role
         }
     })
+
+# ---------------------- CATEGORY FUNCTIONS ---------------------------
+
+# ---------------------- CATEGORY USER FUNCTIONS ---------------------------
+@api_view(['GET'])
+def category_browse(request):
+    category = Category.objects.all()
+    serializer = CategorySerializer(category, many=True)
+    return Response(serializer.data)
+
+
+# ---------------------- CATEGORY ADMIN FUNCTIONS ---------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def category_list(request):
+
+    serializer = CategorySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def category_details(request, pk):
+    try:
+        category = Category.objects.get(pk=pk)
+    except Category.DoesNotExist:
+        return Response({'error': 'This category does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+        category.delete()
+        return Response({'message': 'The Category has been successfully deleted'}, status=status.HTTP_200_OK)
+
 
 # ---------------------- BROWSE FUNCTION ---------------------------
 @api_view(['GET'])
