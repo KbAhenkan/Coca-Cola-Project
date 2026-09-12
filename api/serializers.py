@@ -1,4 +1,4 @@
-from .models import User, Product, Order, OrderItem, Category
+from .models import User, Product, Order, OrderItem, Category, Review
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
@@ -37,3 +37,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model =  OrderItem
         fields = ['id', 'order', 'product', 'quantity', 'price_at_purchase']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(slug_field='email', read_only=True, queryset=User.objects.all())
+    created_at = serializers.DateTimeField(read_only=True)
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'product', 'rating', 'comment', 'created_at']

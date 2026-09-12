@@ -21,4 +21,8 @@ urlpatterns = [
     # PRODUCT URLS
     path('product/', views.product_list, name='product list'),
     path('product/<int:pk>/', views.product_details, name='product detail'),
+
+    # REVIEW URLS
+    path('review/', views.create_review, name='create review'),
+    path('view_review/', views.view_review, name= 'view review'),
 ]

@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import User, Product, Order, OrderItem, Category
-from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, CategorySerializer
+from .models import User, Product, Order, OrderItem, Category, Review
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, CategorySerializer, ReviewSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -212,3 +212,41 @@ def product_details(request, pk):
     if request.method == 'DELETE':
         product.delete()
         return Response({'message': 'Product has been successfully deleted'}, status=status.HTTP_200_OK)
+
+# ---------------------- REVIEW FUNCTIONS ---------------------------
+
+# ---------------------- CREATE REVIEW FUNCTIONS ---------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_review(request):
+    data = request.data
+    product_id = data['product_id']
+
+    try:
+        product_row = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response({'error': 'Product does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    review = Review.objects.create(
+        user=request.user,
+        product_id=product_id,
+        rating=data['rating'],
+        comment=data['comment']
+    )
+
+    return Response({
+        'message': 'Review successfully created'
+    }, status=status.HTTP_201_CREATED)
+
+# ---------------------- VIEW REVIEW FUNCTION ---------------------------
+@api_view(['GET'])
+def view_review(request):
+    product_id = request.GET.get('product')
+
+    if product_id:
+        review = Review.objects.filter(product=product_id)
+    else:
+        review = Review.objects.all()
+
+    serializer = ReviewSerializer(review, many=True)
+    return Response(serializer.data)
