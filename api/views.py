@@ -111,7 +111,13 @@ def category_details(request, pk):
 # ---------------------- BROWSE FUNCTION ---------------------------
 @api_view(['GET'])
 def browse(request):
-    products = Product.objects.all()
+    category_id = request.GET.get('category')
+
+    if category_id:
+        products = Product.objects.filter(category=category_id)
+    else:
+        products = Product.objects.all()
+
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
 
