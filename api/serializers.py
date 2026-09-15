@@ -28,9 +28,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(read_only=True)
+    total = serializers.DecimalField(max_digits=8, decimal_places=2, read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'user', 'date', 'status']
+        fields = ['id', 'user', 'date', 'status', 'total']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
