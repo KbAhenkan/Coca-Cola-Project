@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import User, Product, Order, OrderItem, Category, Review
-from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, CategorySerializer, ReviewSerializer
+from .models import User, Product, Order, OrderItem, Category, Review, Coupon
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, CategorySerializer, ReviewSerializer, CouponSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdmin
+from django.utils import timezone
 # Create your views here.
 
 # ---------------------- SIGNUP FUNCTION ---------------------------
@@ -127,7 +128,10 @@ def browse(request):
 @permission_classes([IsAuthenticated])
 def place_order(request):
     order = Order.objects.create(user=request.user)
-    items = request.data['items']
+    total = 0
+    coupon_message = None
+    items = request.data['items'] # items is a list of dictionaries because one order can contain multiple products. 
+    coupon_code = request.data.get('coupon_code')
     for item in items:
         product_id = item['product_id']
         quantity = item['quantity']
@@ -149,9 +153,26 @@ def place_order(request):
             quantity=quantity,
             price_at_purchase=product_row.price,
         )
+        total += product_row.price * quantity
+    if coupon_code:
+        try:
+            coupon = Coupon.objects.get(code=coupon_code)
+            if coupon.expiry_date < timezone.now():
+                coupon_message = 'Coupon code has expired, full price charged'
+            else:
+                discount_amount = total * (coupon.discount_percentage / 100)
+                total = total - discount_amount
+                coupon_message = f'{coupon.discount_percentage}% discount applied'
+                order.total = total
+        except Coupon.DoesNotExist:
+            coupon_message = 'Coupon code is invalid, full price charged'
+
+    order.save()
     return Response({
         'message': 'Order Successfully placed',
         'order_id': order.id,
+        'total': order.total,
+        'coupon_message': coupon_message
         }, status=status.HTTP_201_CREATED)
 
 # ---------------------- VIEW ORDER FUNCTION ---------------------------
@@ -250,3 +271,44 @@ def view_review(request):
 
     serializer = ReviewSerializer(review, many=True)
     return Response(serializer.data)
+
+
+# ---------------------- COUPON FUNCTIONS ---------------------------
+
+# ---------------------- USER FUNCTIONS ---------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def coupon_browse(request):
+    coupon = Coupon.objects.all()
+    serializer = CouponSerializer(coupon, many=True)
+    return Response(serializer.data)
+
+# ---------------------- ADMIN FUNCTIONS ---------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def coupon_list(request):
+    serializer = CouponSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])  
+def coupon_details(request, pk):
+    try:
+        coupon = Coupon.objects.get(pk=pk)
+    except Coupon.DoesNotExist:
+        return Response({'error': 'This coupon does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
+        serializer = CouponSerializer(coupon, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+        coupon.delete()
+        return Response({'message': 'The coupon has been successfully deleted'}, status=status.HTTP_200_OK)

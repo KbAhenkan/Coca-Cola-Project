@@ -25,4 +25,10 @@ urlpatterns = [
     # REVIEW URLS
     path('review/', views.create_review, name='create review'),
     path('view_review/', views.view_review, name= 'view review'),
+
+    # COUPON URLS
+    path('coupon_browse/', views.coupon_browse, name='browse coupon'),
+    path('coupon/', views.coupon_list, name='coupon list'),
+    path('coupon/<int:pk>/', views.coupon_details, name='coupon detail'),
+    
 ]

@@ -56,15 +56,6 @@ class OrderItem(models.Model):
     def __str__(self):
         return f'{self.quantity} {self.product} for {self.price_at_purchase}'
 
-class Coupon(models.Model):
-    code = models.CharField(max_length=30, unique=True)
-    discount_percentage = models.IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    expiry_date = models.DateTimeField()
-
-    def __str__(self):
-        return f'{self.code} {self.discount_percentage}'
 
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -75,4 +66,14 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.rating} stars - {self.product} by {self.user.username}'
-    
+
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=30, unique=True)
+    discount_percentage = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    expiry_date = models.DateTimeField()
+
+    def __str__(self):
+        return f'{self.code} {self.discount_percentage}'

@@ -1,4 +1,4 @@
-from .models import User, Product, Order, OrderItem, Category, Review
+from .models import User, Product, Order, OrderItem, Category, Review, Coupon   
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
@@ -44,3 +44,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'user', 'product', 'rating', 'comment', 'created_at']
+
+class CouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coupon
+        fields = ['id', 'code', 'discount_percentage', 'expiry_date']
