@@ -39,7 +39,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'order', 'product', 'quantity', 'price_at_purchase']
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='email', read_only=True, queryset=User.objects.all())
+    user = serializers.SlugRelatedField(slug_field='email', read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     class Meta:
         model = Review

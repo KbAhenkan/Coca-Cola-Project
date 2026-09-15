@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 class User(AbstractUser):
@@ -41,6 +42,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS, default='Pending')
+    total = models.DecimalField(max_digits=8, decimal_places=2, null=True)
 
     def __str__(self):
         return f'Order #{self.id} by {self.user.username}'
@@ -53,6 +55,16 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.quantity} {self.product} for {self.price_at_purchase}'
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=30, unique=True)
+    discount_percentage = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    expiry_date = models.DateTimeField()
+
+    def __str__(self):
+        return f'{self.code} {self.discount_percentage}'
 
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
