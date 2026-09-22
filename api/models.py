@@ -38,6 +38,7 @@ class Order(models.Model):
         ('Pending', 'Pending'),
         ('Shipped', 'Shipped'),
         ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled')
     ] 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
