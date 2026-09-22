@@ -6,7 +6,7 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('login/', views.login, name='login'),
 
-    # USER URLS
+    # USER(ORDER) URLS
     path('place_order/', views.place_order, name='place order'),
     path('view_order/', views.view_order, name='view order'),
     path('modify_order/<int:pk>/', views.modify_order, name='modify order'),

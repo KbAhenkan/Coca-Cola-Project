@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdmin
 from django.utils import timezone
+from decimal import Decimal
 # Create your views here.
 
 # ---------------------- SIGNUP FUNCTION ---------------------------
@@ -160,13 +161,13 @@ def place_order(request):
             if coupon.expiry_date < timezone.now():
                 coupon_message = 'Coupon code has expired, full price charged'
             else:
-                discount_amount = total * (coupon.discount_percentage / 100)
+                discount_amount = total * (Decimal(coupon.discount_percentage) / 100)
                 total = total - discount_amount
                 coupon_message = f'{coupon.discount_percentage}% discount applied'
-                order.total = total
         except Coupon.DoesNotExist:
             coupon_message = 'Coupon code is invalid, full price charged'
 
+    order.total = total
     order.save()
     return Response({
         'message': 'Order Successfully placed',
