@@ -10,6 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdmin
 from django.utils import timezone
 from decimal import Decimal
+import stripe
+from django.conf import settings
+stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your views here.
 
 # ---------------------- SIGNUP FUNCTION ---------------------------
@@ -168,12 +171,19 @@ def place_order(request):
             coupon_message = 'Coupon code is invalid, full price charged'
 
     order.total = total
+    intent = stripe.PaymentIntent.create(
+        amount=int(total * 100),
+        currency='usd',
+    )
+    order.stripe_payment_intent_id =  intent.id
+
     order.save()
     return Response({
         'message': 'Order Successfully placed',
         'order_id': order.id,
         'total': order.total,
-        'coupon_message': coupon_message
+        'coupon_message': coupon_message,
+        'client_secret': intent.client_secret,
         }, status=status.HTTP_201_CREATED)
 
 # ---------------------- VIEW ORDER FUNCTION ---------------------------
@@ -198,6 +208,34 @@ def modify_order(request, pk):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ---------------------- CANCEL ORDER FUNCTION ---------------------------
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def cancel_order(request, pk):
+    try:
+        specific_order = Order.objects.get(pk=pk)
+    except Order.DoesNotExist:
+        return Response({'error': 'This order does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if specific_order.user != request.user and request.user.role != 'Admin':
+        return Response({'error': 'You do not have permission to cancel this order'}, status=status.HTTP_403_FORBIDDEN)
+
+    if specific_order.status == 'Delivered':
+        return Response({'error': 'You cannot cancel an order you have already received'}, status=status.HTTP_400_BAD_REQUEST)
+
+    order_items = OrderItem.objects.filter(order=specific_order)
+    for order_item in order_items:
+        product = order_item.product
+        product.stock += order_item.quantity
+        product.save()
+
+    specific_order.status = 'Cancelled'
+    specific_order.save()
+    return Response({'message': 'Order has been sucessfully cancelled'}, status=status.HTTP_200_OK)
+
+
 
 # ---------------------- PRODUCT FUNCTIONS ---------------------------
 @api_view(['GET', 'POST'])

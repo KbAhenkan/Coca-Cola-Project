@@ -11,7 +11,7 @@ urlpatterns = [
     path('view_order/', views.view_order, name='view order'),
     path('modify_order/<int:pk>/', views.modify_order, name='modify order'),
     path('browse/', views.browse, name='browse'),
-    path('cancel_order/', views.cancel_order, name= 'cancel order'),
+    path('cancel_order/<int:pk>/', views.cancel_order, name= 'cancel order'),
 
     # CATEGORY URLS
     path('category_browse/', views.category_browse, name='browse category'),
